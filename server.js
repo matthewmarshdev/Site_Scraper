@@ -31,12 +31,12 @@ app.use(express.static("public"));
 // Set mongoose to leverage built in JavaScript ES6 Promises
 // Connect to the Mongo DB
 mongoose.Promise = Promise;
-mongoose.connect("mongodb://localhost/sportdb");
-useMongoClient: true;
+mongoose.connect("mongodb://localhost/graffitidb");
+
 
 // mongoose.connect(
 //   // "mongodb://heroku_3h5kpclp:otg572npmm838k7h46t442u0kf@ds145997.mlab.com:45997/heroku_3h5kpclp",
-//   "mongodb://localhost/Scraping-News-Site",
+//   "mongodb://localhost/Site_Scraper",
 //   {
 //     useMongoClient: true
 //   }
@@ -49,19 +49,18 @@ useMongoClient: true;
 // A GET route for scraping the echojs website
 app.get("/scrape", function(req, res) {
   // First, we grab the body of the html with request
-  axios.get("https://www.washingtonpost.com/sports/").then(function(response) {
+  axios.get("https://www.bombingscience.com/category/interviews/").then(function(response) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(response.data);
 
     // Now, we grab every h2 within an article tag, and do the following:
-    $(".headline").each(function(i, element) {
+    $(".post-title").each(function(i, element) {
       // Save an empty result object
       var result = {};
 
       // Add the text and href of every link, and save them as properties of the result object
       result.title = $(this)
-        .children("a")
-        .text();
+        .h2("post-title")
       result.link = $(this)
         .children("a")
         .attr("href");
