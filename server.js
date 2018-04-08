@@ -52,23 +52,26 @@ app.get("/scrape", function(req, res) {
   axios.get("https://www.bombingscience.com/category/interviews/").then(function(response) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(response.data);
-
+    console.log("getting into the scrape route")
     // Now, we grab every h2 within an article tag, and do the following:
-    $(".post-title").each(function(i, element) {
+    $(".post-details").each(function(i, element) {
       // Save an empty result object
       var result = {};
 
       // Add the text and href of every link, and save them as properties of the result object
       result.title = $(this)
-        .h2("post-title")
+        .children("h2.post-title")
+        .text()
+        console.log(result.title)
       result.link = $(this)
-        .children("a")
-        .attr("href");
-
+        .children("p.post-excerpt")
+        .text()
+        console.log(result.link)
       // Create a new Article using the `result` object built from scraping
       db.Article.create(result)
         .then(function(dbArticle) {
           // If we were able to successfully scrape and save an Article, send a message to the client
+          console.log("making connection")
         })
         .catch(function(err) {
           // If an error occurred, send it to the client

@@ -4,7 +4,7 @@ $.getJSON("/articles", data => {
   for (var i = 0; i < data.length; i++) {
     // Display the apropos information on the page
     $("#articles").append(
-      "<div><p data-id='" +
+      "<div><p class='test' data-id='" +
         data[i]._id +
         "'>" +
         data[i].title +
@@ -15,13 +15,21 @@ $.getJSON("/articles", data => {
   }
 });
 
+$(document).on("click", "#scrapeIt", function() {
+  event.preventDefault();
+  $.getJSON("/scrape", data => {
+      console.log("Scrape Complete");
+
+  });
+});
+
 // Whenever someone clicks a p tag
-$(document).on("click", "p", () => {
+$(document).on("click", ".test", function() {
   // Empty the notes from the note section
   $("#comments").empty();
   // Save the id from the p tag
   var thisId = $(this).attr("data-id");
-
+  console.log(thisId);
   // Now make an ajax call for the Article
   $.ajax({
     method: "GET",
@@ -52,7 +60,7 @@ $(document).on("click", "p", () => {
 });
 
 // When you click the savenote button
-$(document).on("click", "#savenote", function() {
+$(document).on("click", "#savenote", function(){
   // Grab the id associated with the article from the submit button
   var thisId = $(this).attr("data-id");
 
