@@ -48,6 +48,9 @@ $(document).on("click", ".test", function() {
       $("#comments").append(
         "<button data-id='" + data._id + "' id='savenote'>Save Comment</button>"
       );
+      $("#comments").append(
+        "<button data-id='" + data._id + "' id='delete'>Delete Comment</button>"
+      );
 
       // If there's a note in the article
       if (data.comment) {
@@ -101,6 +104,24 @@ $(document).on("click", ".save", function() {
       saved: true
     }
   }).then(function(data) {
+    // Log the response
+    console.log(data);
+  });
+});
+
+$(document).on("click", "#delete", function () {
+  var deleteBtn = $(this)
+    .siblings()
+    .attr("data-id");
+  console.log(deleteBtn);
+  //saveBtn will show id
+  $.ajax({
+    method: "DELETE",
+    url: "/articles/" + deleteBtn,
+    data: {
+      saved: false
+    }
+  }).then(function (data) {
     // Log the response
     console.log(data);
   });

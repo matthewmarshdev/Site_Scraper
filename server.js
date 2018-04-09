@@ -35,7 +35,7 @@ mongoose.connect("mongodb://localhost/graffitidb");
 
 
 // mongoose.connect(
-//   // "mongodb://heroku_3h5kpclp:otg572npmm838k7h46t442u0kf@ds145997.mlab.com:45997/heroku_3h5kpclp",
+//   "mongodb://heroku_ntmlwrcz:vntohi0qt1458g0r4jea6m9k1h@ds237979.mlab.com:37979/heroku_ntmlwrcz",
 //   "mongodb://localhost/Site_Scraper",
 //   {
 //     useMongoClient: true
@@ -53,31 +53,39 @@ app.get("/scrape", function(req, res) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(response.data);
     console.log("getting into the scrape route")
-    // Now, we grab every h2 within an article tag, and do the following:
-    $(".post-details").each(function(i, element) {
-      // Save an empty result object
-      var result = {};
+    db.Article.find({}).then(function(allArticles) {
+      let allArticleTitles= allArticles.map(function(article){
+        return article.title;
+      });
+      
+        // Now, we grab every h2 within an article tag, and do the following:
+        $(".post-details").each(function(i, element) {
+          // Save an empty result object
+          var result = {};
 
-      // Add the text and href of every link, and save them as properties of the result object
-      result.title = $(this)
-        .children("h2.post-title")
-        .text()
-        console.log(result.title)
-      result.link = $(this)
-        .children("p.post-excerpt")
-        .text()
-        console.log(result.link)
-      // Create a new Article using the `result` object built from scraping
-      db.Article.create(result)
-        .then(function(dbArticle) {
-          // If we were able to successfully scrape and save an Article, send a message to the client
-          console.log("making connection")
-        })
-        .catch(function(err) {
-          // If an error occurred, send it to the client
-          res.json(err);
+              // Add the text and href of every link, and save them as properties of the result object
+              result.title = $(this)
+                .children("h2.post-title")
+                .text()
+                console.log(result.title)
+              result.link = $(this)
+                .children("p.post-excerpt")
+                .text()
+                console.log(result.link)
+             
+              if(!allArticleTitles.includes(result.title)){
+                  db.Article.create(result)
+                    .then(function(dbArticle) {
+                      // If we were able to successfully scrape and save an Article, send a message to the client
+                      console.log("making connection")
+                    })
+                    .catch(function(err) {
+                      // If an error occurred, send it to the client
+                      res.json(err);
+                    });
+              } 
         });
-    });
+  });
     res.send("Scrape Complete");
   });
 });
@@ -131,6 +139,28 @@ app.post("/articles/:id", function(req, res) {
       res.json(dbArticle);
     })
     .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
+
+app.delete("/articles/:id", function (req, res) {
+  // Create a new note and pass the req.body to the entry
+  db.Comment.delete(req.body)
+    .then(function (dbComment) {
+      // If a Note was created successfully, find one Article with an `_id` equal to `req.params.id`. Update the Article to be associated with the new Note
+      // { new: true } tells the query that we want it to return the updated User -- it returns the original by default
+      // Since our mongoose query returns a promise, we can chain another `.then` which receives the result of the query
+      return db.Article.findOneAndUpdate(
+        { _id: req.params.id },
+        { comment: dbComment._id },
+      );
+    })
+    .then(function (dbArticle) {
+      // If we were able to successfully delete an Article, send it back to the client
+      res.json(dbArticle);
+    })
+    .catch(function (err) {
       // If an error occurred, send it to the client
       res.json(err);
     });
